@@ -24,20 +24,38 @@ namespace Internet_Bill_Bot
     {
         public int Id { get; set; }
         public long UserId { get; set; }
+        public int DocumentNumber { get; set; } // Переконайтеся, що це поле відображається на відповідну колонку в БД
         public int ApartmentNumber { get; set; }
         public string Complaint { get; set; }
-        public DateTime Date { get; set; } // Час подання заявки буде встановлено автоматично
-        public string FirstName { get; set; } // Ім'я
-        public string LastName { get; set; } // Прізвище
-        public string Patronymic { get; set; } // По батькові
+        public DateTime Date { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Patronymic { get; set; }
     }
 
     // Структура для збереження персональних даних користувача
     class PersonalInfo
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Patronymic { get; set; }
+        public string FirstName { get; private set; }
+        public string LastName { get; private set; }
+        public string Patronymic { get; private set; }
+
+        public PersonalInfo(string firstName, string lastName, string patronymic)
+        {
+            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(patronymic))
+            {
+                throw new ArgumentException("Персональні дані не можуть бути пустими.");
+            }
+
+            FirstName = firstName;
+            LastName = lastName;
+            Patronymic = patronymic;
+        }
+
+        public string GetFullName()
+        {
+            return $"{FirstName} {LastName} {Patronymic}";
+        }
     }
 
 }
