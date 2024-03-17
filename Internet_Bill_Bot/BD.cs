@@ -8,8 +8,8 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Internet_Bill_Bot
 {
-    
 
+  
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Application> Applications { get; set; }
