@@ -3,6 +3,7 @@ using System;
 using Internet_Bill_Bot;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Internet_Bill_Bot.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240407102350_AddStateAnaDataClose")]
+    partial class AddStateAnaDataClose
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,9 +55,6 @@ namespace Internet_Bill_Bot.Migrations
                     b.Property<string>("Patronymic")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<int>("ProblemId")
-                        .HasColumnType("int");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");

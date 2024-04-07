@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection.Metadata;
 using System.Text;
@@ -38,6 +39,7 @@ class Program
 
     // Словник для тимчасового збереження персональних даних користувачів
     static Dictionary<long, PersonalInfo> personalInfos = new Dictionary<long, PersonalInfo>();
+    
 
     enum UserState
     {
@@ -59,10 +61,14 @@ class Program
 
             if (userApplications.Any())
             {
-                var message = new StringBuilder("Ваші заявки:\n");
+                var message = new StringBuilder();
+                int i = 1;
                 foreach (var app in userApplications)
                 {
-                    message.AppendLine($"Документ №{app.DocumentNumber}, Квартира: {app.ApartmentNumber}, Скарга: {app.Complaint}, Дата: {app.Date.ToString("dd/MM/yyyy")}");
+                    message.AppendLine($"============={i}=============");
+                    message.AppendLine($"Дата звернення: №{app.Date.ToString("dd/MM/yyyy")} \nДокумент: {app.DocumentNumber} \nКвартира: {app.ApartmentNumber} \nСкарга: {app.Complaint} \nСтан: {app.state}");
+                  
+                    i++;
                 }
                 await botClient.SendTextMessageAsync(chatId, message.ToString(), cancellationToken: cancellationToken);
             }
@@ -132,6 +138,7 @@ class Program
 
     static async Task HandleStateDependentMessage(ITelegramBotClient botClient, long chatId, string messageText, CancellationToken cancellationToken)
     {
+        int problemID = 0;
         // Перевірка вибору "Переглянути мої заявки" на початку, щоб уникнути конфлікту станів
         if (messageText.Equals("Переглянути мої заявки", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -222,14 +229,19 @@ class Program
                 {
                     // Для будь-якого іншого вибору з клавіатури зберігаємо вибір як Complaint
                     var selectedComplaint = messageText; // Вибір користувача з клавіатури
-                    SaveApplication(chatId, selectedComplaint);
+                    if("Проблеми з кабелем" == selectedComplaint) { problemID = 1; }
+                    else if ("Не працює розетка комп'ютерна" == selectedComplaint){ problemID = 2; }
+                    else if ("Слабкий сигнал інтернету" == selectedComplaint) { problemID = 3; }
+                    else if ("Не працює вайфай" == selectedComplaint) { problemID = 4; }
+                    else { problemID = 5; }
+                    SaveApplication(chatId, selectedComplaint, problemID);
                 }
                 break;
 
             case UserState.AwaitingCustomComplaint:
                 // В цьому стані будь-яке повідомлення від користувача вважається заявкою
                 var customComplaint = messageText; // Текст заявки користувача
-                SaveApplication(chatId, customComplaint);
+                SaveApplication(chatId, customComplaint, problemID);
                 break;
 
             // Ваші інші case умови...
@@ -246,7 +258,7 @@ class Program
                     userStates[chatId] = UserState.AwaitingComplaintSelection;
                     var replyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
                      {
-                        new KeyboardButton[] {"Не працює роутер", "Не працює розетка комп'ютерна", "Слабкий сигнал інтернету", "Не працює вайфай", "Інше"}
+                        new KeyboardButton[] {"Немає інтренету", "Не працює інтернет розетка", "Великикй пінг", "Повільний інтернет", "Інше"}
                     })
                     {
                         ResizeKeyboard = true,
@@ -278,7 +290,7 @@ class Program
         personalInfos.Remove(chatId);
         documentNumbers.Remove(chatId);
     }
-    private static async void SaveApplication(long chatId, string complaint)
+    private static async void SaveApplication(long chatId, string complaint, int problemID)
     {
         using (var context = new ApplicationDbContext())
         {
@@ -292,6 +304,8 @@ class Program
                 FirstName = personalInfos.ContainsKey(chatId) ? personalInfos[chatId].FirstName : "",
                 LastName = personalInfos.ContainsKey(chatId) ? personalInfos[chatId].LastName : "",
                 Patronymic = personalInfos.ContainsKey(chatId) ? personalInfos[chatId].Patronymic : "",
+                ProblemId = problemID,
+                state = "open"
             };
             context.Applications.Add(application);
             await context.SaveChangesAsync();
@@ -301,7 +315,7 @@ class Program
         ResetUserData(chatId);
 
         // Відправляємо повідомлення з подякою та клавіатурою для наступних дій
-        await botClient.SendTextMessageAsync(chatId, "Дякую, ваша проблема буде вирішена.", replyMarkup: new ReplyKeyboardMarkup(new[]
+        await botClient.SendTextMessageAsync(chatId, "Дякую, ваша проблема буде вирішена, впродовж 4 робочих днів.", replyMarkup: new ReplyKeyboardMarkup(new[]
         {
         new KeyboardButton[] {"Залишити заявку"},
         new KeyboardButton[] {"Переглянути мої заявки"}

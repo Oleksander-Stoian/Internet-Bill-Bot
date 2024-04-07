@@ -18,19 +18,22 @@ namespace Internet_Bill_Bot
         {
             optionsBuilder.UseMySql("server=localhost;database=telegram_bot_bd;user=root;password=Qaz186186",
                 new MySqlServerVersion(new Version(8, 0, 36))); // Вказуйте актуальну версію MySQL сервера
-        }
+        } 
     }
     public class Application
     {
         public int Id { get; set; }
         public long UserId { get; set; }
-        public int DocumentNumber { get; set; } // Переконайтеся, що це поле відображається на відповідну колонку в БД
+        public int ProblemId { get; set; }
+        public int DocumentNumber { get; set; } 
         public int ApartmentNumber { get; set; }
         public string Complaint { get; set; }
-        public DateTime Date { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Patronymic { get; set; }
+        public string state { get; set; }
+        public DateTime Date { get; set; }
+        public DateTime DateClose { get; set; }
     }
 
     // Структура для збереження персональних даних користувача
