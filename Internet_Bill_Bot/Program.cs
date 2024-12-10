@@ -82,7 +82,7 @@ class Program
 
     static async Task Main()
     {
-        botClient = new TelegramBotClient("6940735278:AAE0tDrA4X2sVH2lFLnDgbEW1uPtewBUqW0");
+        botClient = new TelegramBotClient("####");
         var cts = new CancellationTokenSource();
 
         var receiverOptions = new ReceiverOptions
